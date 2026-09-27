@@ -32,6 +32,15 @@ public class EstudianteController {
         return estudiante;
     }
 
+    public void actualizarEstudiante(Estudiante estudiante, String nombreCompleto, String telefono,
+                                     String correo, String edadTexto) {
+        if (estudiante == null) {
+            throw new IllegalArgumentException("Seleccione un estudiante de la lista");
+        }
+        gestionEstudiantes.actualizarEstudiante(estudiante.getDocumento(), nombreCompleto, telefono, correo,
+                Conversor.aEntero(edadTexto, "edad"));
+    }
+
     public Optional<Estudiante> buscarEstudiante(String documento) {
         if (Conversor.estaVacio(documento)) {
             throw new IllegalArgumentException("Ingrese el documento a buscar");
