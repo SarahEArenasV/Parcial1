@@ -1,6 +1,7 @@
 package co.edu.uniquindio.poo.patronescreacionales.builder;
 
 import co.edu.uniquindio.poo.model.Estudiante;
+import co.edu.uniquindio.poo.model.IAsignableProfesor;
 import co.edu.uniquindio.poo.model.IDescuento;
 import co.edu.uniquindio.poo.model.Profesor;
 import co.edu.uniquindio.poo.model.ServicioAdicional;
@@ -95,8 +96,8 @@ public class MatriculaBuilder implements IMatriculaBuilder {
         for (ServicioAdicional servicio : servicios) {
             matricula.agregarServicio(servicio);
         }
-        if (profesor != null) {
-            matricula.setAsignacion(curso.crearAsignacion(estudiante, profesor, fecha));
+        if (profesor != null && curso instanceof IAsignableProfesor asignable) {
+            matricula.setAsignacion(asignable.crearAsignacion(estudiante, profesor, fecha));
         }
         matricula.setDescuento(descuento);
         Matricula resultado = matricula;
@@ -119,6 +120,9 @@ public class MatriculaBuilder implements IMatriculaBuilder {
         }
         if (profesor != null && !curso.permiteAsignarProfesor()) {
             throw new IllegalStateException("Solo los cursos personalizados permiten asignar profesor");
+        }
+        if (profesor == null && curso.permiteAsignarProfesor()) {
+            throw new IllegalStateException("El curso personalizado requiere asignar un profesor");
         }
     }
 }

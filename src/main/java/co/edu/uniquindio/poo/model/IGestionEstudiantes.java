@@ -8,6 +8,8 @@ public interface IGestionEstudiantes {
 
     Optional<Estudiante> buscarEstudiante(String documento);
 
+    void actualizarEstudiante(String documento, String nombreCompleto, String telefono, String correo, int edad);
+
     boolean eliminarEstudiante(String documento);
 
     List<Estudiante> getEstudiantes();

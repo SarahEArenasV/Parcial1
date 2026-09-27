@@ -80,6 +80,17 @@ public final class Academia implements IGestionEstudiantes, IGestionProfesores, 
     }
 
     @Override
+    public void actualizarEstudiante(String documento, String nombreCompleto, String telefono,
+                                     String correo, int edad) {
+        Estudiante estudiante = buscarEstudiante(documento)
+                .orElseThrow(() -> new IllegalArgumentException("No existe el estudiante " + documento));
+        estudiante.setNombre(nombreCompleto);
+        estudiante.setTelefono(telefono);
+        estudiante.setCorreo(correo);
+        estudiante.setEdad(edad);
+    }
+
+    @Override
     public boolean eliminarEstudiante(String documento) {
         Optional<Estudiante> estudiante = buscarEstudiante(documento);
         if (estudiante.isEmpty()) {
@@ -121,6 +132,27 @@ public final class Academia implements IGestionEstudiantes, IGestionProfesores, 
     }
 
     @Override
+    public void actualizarProfesor(String identificacion, String nombre, String telefono, double tarifaSesion) {
+        Profesor profesor = buscarProfesor(identificacion)
+                .orElseThrow(() -> new IllegalArgumentException("No existe el profesor " + identificacion));
+        if (tarifaSesion != profesor.getTarifaSesion() && tieneAsignaciones(profesor)) {
+            throw new IllegalStateException("No se puede cambiar la tarifa de un profesor con asignaciones registradas");
+        }
+        profesor.setNombre(nombre);
+        profesor.setTelefono(telefono);
+        profesor.setTarifaSesion(tarifaSesion);
+    }
+
+    private boolean tieneAsignaciones(Profesor profesor) {
+        for (AsignacionProfesor asignacion : asignaciones) {
+            if (asignacion.getProfesor() == profesor) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
     public List<Profesor> getProfesores() {
         return Collections.unmodifiableList(profesores);
     }
@@ -158,6 +190,27 @@ public final class Academia implements IGestionEstudiantes, IGestionProfesores, 
             }
         }
         return Optional.empty();
+    }
+
+    @Override
+    public void actualizarCurso(String codigo, String nombre, String descripcion, double valorMensual) {
+        Curso curso = buscarCurso(codigo)
+                .orElseThrow(() -> new IllegalArgumentException("No existe el curso " + codigo));
+        if (valorMensual != curso.getValorMensual() && tieneMatriculas(curso)) {
+            throw new IllegalStateException("No se puede cambiar el valor mensual de un curso con matrículas registradas");
+        }
+        curso.setNombre(nombre);
+        curso.setDescripcion(descripcion);
+        curso.setValorMensual(valorMensual);
+    }
+
+    private boolean tieneMatriculas(Curso curso) {
+        for (Matricula matricula : matriculas) {
+            if (matricula.getCurso() == curso) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
@@ -244,10 +297,23 @@ public final class Academia implements IGestionEstudiantes, IGestionProfesores, 
         if (buscarCurso(matricula.getCurso().getCodigo()).isEmpty()) {
             throw new IllegalArgumentException("El curso no está registrado en la academia");
         }
+        if (estaMatriculado(matricula.getEstudiante(), matricula.getCurso())) {
+            throw new IllegalArgumentException("El estudiante ya está matriculado en el curso "
+                    + matricula.getCurso().getNombre());
+        }
         matriculas.add(matricula);
         if (matricula.getAsignacion() != null) {
             asignaciones.add(matricula.getAsignacion());
         }
+    }
+
+    private boolean estaMatriculado(Estudiante estudiante, Curso curso) {
+        for (Matricula matricula : matriculas) {
+            if (matricula.getEstudiante() == estudiante && matricula.getCurso() == curso) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
